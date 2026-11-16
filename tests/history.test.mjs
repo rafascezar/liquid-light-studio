@@ -1,0 +1,4 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {createHistory} from '../public/history.js';
+test('undo captures a pending field drag and redo restores the entire gesture',()=>{const initial={fields:[{x:0,softness:.5}],colour:'#123456'},h=createHistory(initial),current=structuredClone(initial);current.fields[0].x=40;assert.deepEqual(h.undo(current),initial);assert.deepEqual(h.redo(),current);});
+test('duplicate saves do not consume undo steps and edits after undo discard redo',()=>{const h=createHistory({x:0});h.record({x:1});h.record({x:1});assert.deepEqual(h.undo({x:1}),{x:0});h.record({x:2});assert.equal(h.redo(),null);assert.deepEqual(h.undo({x:2}),{x:0});});
+test('history snapshots are independent and bounded',()=>{const h=createHistory({x:0},3);for(let x=1;x<5;x++)h.record({x});const a=h.undo({x:4});a.x=99;assert.deepEqual(h.undo({x:3}),{x:2});assert.equal(h.undo({x:2}),null);assert.deepEqual(h.redo(),{x:3});});
